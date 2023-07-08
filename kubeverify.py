@@ -1,0 +1,130 @@
+import subprocess
+
+def check_kubernetes_config():
+    kubernetes_config = [
+        {"argument": "--anonymous-auth", "expected_value": "false", "description": "O argumento --anonymous-auth deve estar definido como false."},
+        {"argument": "--basic-auth-file", "expected_value": "", "description": "O argumento --basic-auth-file não deve ser definido."},
+        {"argument": "--insecure-allow-any-token", "expected_value": "", "description": "O argumento --insecure-allow-any-token não deve ser definido."},
+        {"argument": "--kubelet-https", "expected_value": "true", "description": "O argumento --kubelet-https deve estar definido como true."},
+        {"argument": "--insecure-bind-address", "expected_value": "", "description": "O argumento --insecure-bind-address não deve ser definido."},
+        {"argument": "--insecure-port", "expected_value": "0", "description": "O argumento --insecure-port deve estar definido como 0."},
+        {"argument": "--secure-port", "expected_value": "0", "description": "O argumento --secure-port não deve estar definido como 0."},
+        {"argument": "--profiling", "expected_value": "false", "description": "O argumento --profiling deve estar definido como false."},
+        {"argument": "--repair-malformed-updates", "expected_value": "false", "description": "O argumento --repair-malformed-updates deve estar definido como false."},
+        {"argument": "--admission-control", "value": "AlwaysAdmit", "description": "O plugin de controle de admissão AlwaysAdmit não deve estar definido."},
+        {"argument": "--admission-control", "value": "AlwaysPullImages", "description": "O plugin de controle de admissão AlwaysPullImages deve estar definido."},
+        {"argument": "--admission-control", "value": "DenyEscalatingExec", "description": "O plugin de controle de admissão DenyEscalatingExec deve estar definido."},
+        {"argument": "--admission-control", "value": "SecurityContextDeny", "description": "O plugin de controle de admissão SecurityContextDeny não deve estar definido."},
+        {"argument": "--admission-control", "value": "NamespaceLifecycle", "description": "O plugin de controle de admissão NamespaceLifecycle deve estar definido."},
+        {"argument": "--audit-log-path", "expected_value": "<path>", "description": "O argumento --audit-log-path deve estar definido como o caminho apropriado."},
+        {"argument": "--audit-log-maxage", "expected_value": "30", "description": "O argumento --audit-log-maxage deve estar definido como 30."},
+        {"argument": "--audit-log-maxbackup", "expected_value": "10", "description": "O argumento --audit-log-maxbackup deve estar definido como 10."},
+        {"argument": "--audit-log-maxsize", "expected_value": "100", "description": "O argumento --audit-log-maxsize deve estar definido como 100."},
+        {"argument": "--authorization-mode", "value": "AlwaysAllow", "description": "O argumento --authorization-mode não deve estar definido como AlwaysAllow."},
+        {"argument": "--token-auth-file", "expected_value": "", "description": "O argumento --token-auth-file não deve ser definido."},
+        {"argument": "--kubelet-certificate-authority", "expected_value": "<ca_file>", "description": "O argumento --kubelet-certificate-authority deve estar definido como o caminho apropriado."},
+        {"argument": "--kubelet-client-certificate", "expected_value": "<client_cert>", "description": "O argumento --kubelet-client-certificate deve estar definido como o caminho apropriado."},
+        {"argument": "--kubelet-client-key", "expected_value": "<client_key>", "description": "O argumento --kubelet-client-key deve estar definido como o caminho apropriado."},
+        {"argument": "--service-account-lookup", "expected_value": "true", "description": "O argumento --service-account-lookup deve estar definido como true."},
+        {"argument": "--enable-admission-plugins", "value": "PodSecurityPolicy", "description": "O plugin de controle de admissão PodSecurityPolicy deve estar definido."},
+        {"argument": "--service-account-key-file", "expected_value": "<key_file>", "description": "O argumento --service-account-key-file deve estar definido como o caminho apropriado."},
+        {"argument": "--etcd-certfile", "expected_value": "<cert_file>", "description": "O argumento --etcd-certfile deve estar definido como o caminho apropriado."},
+        {"argument": "--etcd-keyfile", "expected_value": "<key_file>", "description": "O argumento --etcd-keyfile deve estar definido como o caminho apropriado."},
+        {"argument": "--enable-admission-plugins", "value": "ServiceAccount", "description": "O plugin de controle de admissão ServiceAccount deve estar definido."},
+        {"argument": "--tls-cert-file", "expected_value": "<cert_file>", "description": "O argumento --tls-cert-file deve estar definido como o caminho apropriado."},
+        {"argument": "--tls-private-key-file", "expected_value": "<key_file>", "description": "O argumento --tls-private-key-file deve estar definido como o caminho apropriado."},
+        {"argument": "--client-ca-file", "expected_value": "<ca_file>", "description": "O argumento --client-ca-file deve estar definido como o caminho apropriado."},
+        {"argument": "--api-server-min-request-timeout", "expected_value": "<timeout>", "description": "O argumento --api-server-min-request-timeout deve estar definido como o valor apropriado."},
+        {"argument": "--authorization-mode", "value": "RBAC", "description": "O argumento --authorization-mode deve incluir RBAC."}
+    ]
+    
+    for config in kubernetes_config:
+        check_configuration(config)
+
+def check_configuration(config):
+    argument = config["argument"]
+    value = config.get("value")
+    expected_value = config.get("expected_value")
+    description = config["description"]
+    
+    if value:
+        command = f"kubectl get apiserver -o=jsonpath='{{.spec.{argument}}}{{range .spec.{argument}}},{{.}}{{end}}'"
+        output = subprocess.getoutput(command)
+        if value in output:
+            print(f"{argument}: PASS")
+        else:
+            print(f"{argument}: FAIL - {description}")
+    else:
+        command = f"kubectl get kube-apiserver -o=jsonpath='{{.spec.{argument}}}'"
+        output = subprocess.getoutput(command)
+        if output == expected_value:
+            print(f"{argument}: PASS")
+        else:
+            print(f"{argument}: FAIL - {description}")
+
+check_kubernetes_config()
+import subprocess
+
+def check_kubernetes_config():
+    kubernetes_config = [
+        {"argument": "--anonymous-auth", "expected_value": "false", "description": "O argumento --anonymous-auth deve estar definido como false."},
+        {"argument": "--basic-auth-file", "expected_value": "", "description": "O argumento --basic-auth-file não deve ser definido."},
+        {"argument": "--insecure-allow-any-token", "expected_value": "", "description": "O argumento --insecure-allow-any-token não deve ser definido."},
+        {"argument": "--kubelet-https", "expected_value": "true", "description": "O argumento --kubelet-https deve estar definido como true."},
+        {"argument": "--insecure-bind-address", "expected_value": "", "description": "O argumento --insecure-bind-address não deve ser definido."},
+        {"argument": "--insecure-port", "expected_value": "0", "description": "O argumento --insecure-port deve estar definido como 0."},
+        {"argument": "--secure-port", "expected_value": "0", "description": "O argumento --secure-port não deve estar definido como 0."},
+        {"argument": "--profiling", "expected_value": "false", "description": "O argumento --profiling deve estar definido como false."},
+        {"argument": "--repair-malformed-updates", "expected_value": "false", "description": "O argumento --repair-malformed-updates deve estar definido como false."},
+        {"argument": "--admission-control", "value": "AlwaysAdmit", "description": "O plugin de controle de admissão AlwaysAdmit não deve estar definido."},
+        {"argument": "--admission-control", "value": "AlwaysPullImages", "description": "O plugin de controle de admissão AlwaysPullImages deve estar definido."},
+        {"argument": "--admission-control", "value": "DenyEscalatingExec", "description": "O plugin de controle de admissão DenyEscalatingExec deve estar definido."},
+        {"argument": "--admission-control", "value": "SecurityContextDeny", "description": "O plugin de controle de admissão SecurityContextDeny não deve estar definido."},
+        {"argument": "--admission-control", "value": "NamespaceLifecycle", "description": "O plugin de controle de admissão NamespaceLifecycle deve estar definido."},
+        {"argument": "--audit-log-path", "expected_value": "<path>", "description": "O argumento --audit-log-path deve estar definido como o caminho apropriado."},
+        {"argument": "--audit-log-maxage", "expected_value": "30", "description": "O argumento --audit-log-maxage deve estar definido como 30."},
+        {"argument": "--audit-log-maxbackup", "expected_value": "10", "description": "O argumento --audit-log-maxbackup deve estar definido como 10."},
+        {"argument": "--audit-log-maxsize", "expected_value": "100", "description": "O argumento --audit-log-maxsize deve estar definido como 100."},
+        {"argument": "--authorization-mode", "value": "AlwaysAllow", "description": "O argumento --authorization-mode não deve estar definido como AlwaysAllow."},
+        {"argument": "--token-auth-file", "expected_value": "", "description": "O argumento --token-auth-file não deve ser definido."},
+        {"argument": "--kubelet-certificate-authority", "expected_value": "<ca_file>", "description": "O argumento --kubelet-certificate-authority deve estar definido como o caminho apropriado."},
+        {"argument": "--kubelet-client-certificate", "expected_value": "<client_cert>", "description": "O argumento --kubelet-client-certificate deve estar definido como o caminho apropriado."},
+        {"argument": "--kubelet-client-key", "expected_value": "<client_key>", "description": "O argumento --kubelet-client-key deve estar definido como o caminho apropriado."},
+        {"argument": "--service-account-lookup", "expected_value": "true", "description": "O argumento --service-account-lookup deve estar definido como true."},
+        {"argument": "--enable-admission-plugins", "value": "PodSecurityPolicy", "description": "O plugin de controle de admissão PodSecurityPolicy deve estar definido."},
+        {"argument": "--service-account-key-file", "expected_value": "<key_file>", "description": "O argumento --service-account-key-file deve estar definido como o caminho apropriado."},
+        {"argument": "--etcd-certfile", "expected_value": "<cert_file>", "description": "O argumento --etcd-certfile deve estar definido como o caminho apropriado."},
+        {"argument": "--etcd-keyfile", "expected_value": "<key_file>", "description": "O argumento --etcd-keyfile deve estar definido como o caminho apropriado."},
+        {"argument": "--enable-admission-plugins", "value": "ServiceAccount", "description": "O plugin de controle de admissão ServiceAccount deve estar definido."},
+        {"argument": "--tls-cert-file", "expected_value": "<cert_file>", "description": "O argumento --tls-cert-file deve estar definido como o caminho apropriado."},
+        {"argument": "--tls-private-key-file", "expected_value": "<key_file>", "description": "O argumento --tls-private-key-file deve estar definido como o caminho apropriado."},
+        {"argument": "--client-ca-file", "expected_value": "<ca_file>", "description": "O argumento --client-ca-file deve estar definido como o caminho apropriado."},
+        {"argument": "--api-server-min-request-timeout", "expected_value": "<timeout>", "description": "O argumento --api-server-min-request-timeout deve estar definido como o valor apropriado."},
+        {"argument": "--authorization-mode", "value": "RBAC", "description": "O argumento --authorization-mode deve incluir RBAC."}
+    ]
+    
+    for config in kubernetes_config:
+        check_configuration(config)
+
+def check_configuration(config):
+    argument = config["argument"]
+    value = config.get("value")
+    expected_value = config.get("expected_value")
+    description = config["description"]
+    
+    if value:
+        command = f"kubectl get apiserver -o=jsonpath='{{.spec.{argument}}}{{range .spec.{argument}}},{{.}}{{end}}'"
+        output = subprocess.getoutput(command)
+        if value in output:
+            print(f"{argument}: PASS")
+        else:
+            print(f"{argument}: FAIL - {description}")
+    else:
+        command = f"kubectl get kube-apiserver -o=jsonpath='{{.spec.{argument}}}'"
+        output = subprocess.getoutput(command)
+        if output == expected_value:
+            print(f"{argument}: PASS")
+        else:
+            print(f"{argument}: FAIL - {description}")
+
+check_kubernetes_config()
