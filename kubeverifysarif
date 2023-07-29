@@ -43,8 +43,8 @@ def check_kubernetes_config():
     
     for config in kubernetes_config:
         result = check_configuration(config)
-        results.append(result)
-    
+        results.extend(result)
+
     return results
 
 def check_configuration(config):
@@ -57,40 +57,128 @@ def check_configuration(config):
         command = f"kubectl get apiserver -o=jsonpath='{{.spec.{argument}}}{{range .spec.{argument}}},{{.}}{{end}}'"
         output = subprocess.getoutput(command)
         if value in output:
-            result = {"argument": argument, "status": "PASS"}
+            result = {
+                "ruleId": argument,
+                "ruleIndex": 0,
+                "level": "error",
+                "message": {
+                    "text": f"{argument}: PASS"
+                },
+                "locations": [
+                    {
+                        "physicalLocation": {
+                            "artifactLocation": {
+                                "uri": "metadata"
+                            }
+                        }
+                    }
+                ]
+            }
         else:
-            result = {"argument": argument, "status": "FAIL", "description": description}
+            result = {
+                "ruleId": argument,
+                "ruleIndex": 0,
+                "level": "error",
+                "message": {
+                    "text": f"{argument}: FAIL - {description}"
+                },
+                "locations": [
+                    {
+                        "physicalLocation": {
+                            "artifactLocation": {
+                                "uri": "metadata"
+                            }
+                        }
+                    }
+                ]
+            }
     else:
         command = f"kubectl get kube-apiserver -o=jsonpath='{{.spec.{argument}}}'"
         output = subprocess.getoutput(command)
         if output == expected_value:
-            result = {"argument": argument, "status": "PASS"}
+            result = {
+                "ruleId": argument,
+                "ruleIndex": 0,
+                "level": "error",
+                "message": {
+                    "text": f"{argument}: PASS"
+                },
+                "locations": [
+                    {
+                        "physicalLocation": {
+                            "artifactLocation": {
+                                "uri": "metadata"
+                            }
+                        }
+                    }
+                ]
+            }
         else:
-            result = {"argument": argument, "status": "FAIL", "description": description}
+            result = {
+                "ruleId": argument,
+                "ruleIndex": 0,
+                "level": "error",
+                "message": {
+                    "text": f"{argument}: FAIL - {description}"
+                },
+                "locations": [
+                    {
+                        "physicalLocation": {
+                            "artifactLocation": {
+                                "uri": "metadata"
+                            }
+                        }
+                    }
+                ]
+            }
     
-    return result
+    return [
+        {
+            "ruleId": argument,
+            "ruleIndex": 0,
+            "level": "error",
+            "message": {
+                "text": description
+            },
+            "locations": [
+                {
+                    "physicalLocation": {
+                        "artifactLocation": {
+                            "uri": "metadata"
+                        }
+                    }
+                }
+            ]
+        },
+        result
+    ]
 
 results = check_kubernetes_config()
 
 # Convertendo para o formato SARIF
 sarif_output = {
-    "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+    "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
     "version": "2.1.0",
     "runs": [
         {
             "tool": {
                 "driver": {
-                    "name": "Kubeverify",
+                    "name": "Kubernetes Configuration Checker",
                     "version": "1.0.0",
+                    "rules": []
                 }
             },
-            "results": results
+            "results": []
         }
     ]
 }
 
+for result in results:
+    sarif_output['runs'][0]['tool']['driver']['rules'].append(result)
+    sarif_output['runs'][0]['results'].append(result)
+
 # Salvando o resultado em um arquivo SARIF
-with open("kubeverify.sarif", "w") as f:
+with open("kubernetes_config_check.sarif", "w") as f:
     json.dump(sarif_output, f, indent=2)
 
 # Imprimindo o resultado no console
