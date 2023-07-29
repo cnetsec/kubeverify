@@ -90,7 +90,7 @@ sarif_output = {
 }
 
 # Salvando o resultado em um arquivo SARIF
-with open("kubernetes_config_check.sarif", "w") as f:
+with open("kubeverify.sarif", "w") as f:
     json.dump(sarif_output, f, indent=2)
 
 # Imprimindo o resultado no console
