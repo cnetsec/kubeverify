@@ -1,5 +1,5 @@
-import json
 import subprocess
+import json
 
 def check_kubernetes_config():
     kubernetes_config = [
@@ -38,6 +38,7 @@ def check_kubernetes_config():
         {"argument": "--api-server-min-request-timeout", "expected_value": "<timeout>", "description": "O argumento --api-server-min-request-timeout deve estar definido como o valor apropriado."},
         {"argument": "--authorization-mode", "value": "RBAC", "description": "O argumento --authorization-mode deve incluir RBAC."}
     ]
+    
     results = []
     
     for config in kubernetes_config:
@@ -58,7 +59,6 @@ def check_configuration(config):
         if value in output:
             result = {
                 "ruleId": argument,
-                "ruleIndex": 0,
                 "level": "pass",
                 "message": {
                     "text": f"{argument}: PASS"
@@ -71,12 +71,14 @@ def check_configuration(config):
                             }
                         }
                     }
-                ]
+                ],
+                "properties": {
+                    "description": description
+                }
             }
         else:
             result = {
                 "ruleId": argument,
-                "ruleIndex": 0,
                 "level": "fail",
                 "message": {
                     "text": f"{argument}: FAIL - {description}"
@@ -89,7 +91,10 @@ def check_configuration(config):
                             }
                         }
                     }
-                ]
+                ],
+                "properties": {
+                    "description": description
+                }
             }
     else:
         command = f"kubectl get kube-apiserver -o=jsonpath='{{.spec.{argument}}}'"
@@ -97,7 +102,6 @@ def check_configuration(config):
         if output == expected_value:
             result = {
                 "ruleId": argument,
-                "ruleIndex": 0,
                 "level": "pass",
                 "message": {
                     "text": f"{argument}: PASS"
@@ -110,12 +114,14 @@ def check_configuration(config):
                             }
                         }
                     }
-                ]
+                ],
+                "properties": {
+                    "description": description
+                }
             }
         else:
             result = {
                 "ruleId": argument,
-                "ruleIndex": 0,
                 "level": "fail",
                 "message": {
                     "text": f"{argument}: FAIL - {description}"
@@ -128,12 +134,13 @@ def check_configuration(config):
                             }
                         }
                     }
-                ]
+                ],
+                "properties": {
+                    "description": description
+                }
             }
     
-    return [
-        result
-    ]
+    return [result]
 
 results = check_kubernetes_config()
 
@@ -145,19 +152,27 @@ sarif_output = {
         {
             "tool": {
                 "driver": {
-                    "name": "Kubeverify",
-                    "version": "1.0.0",
+                    "name": "Kubeverify v0.0.2 ",
+                    "version": "0.0.2",
                     "rules": []
                 }
             },
-            "results": results
+            "results": []
         }
     ]
 }
 
-# Salvando o resultado em um arquivo SARIF
-with open("1.sarif", "w") as f:
-    json.dump(sarif_output, f, indent=2)
+for result in results:
+    rule = {
+        "id": result["ruleId"],
+        "name": result["ruleId"],
+        "shortDescription": {
+            "text": result["message"]["text"]
+        }
+    }
+    sarif_output['runs'][0]['tool']['driver']['rules'].append(rule)
+    sarif_output['runs'][0]['results'].append(result)
 
-# Imprimindo o resultado no console
-print(json.dumps(sarif_output, indent=2))
+# Salvando o resultado em um arquivo SARIF
+with open("kubeverifyoutput.sarif", "w") as f:
+    json.dump(sarif_output, f, indent=2)
